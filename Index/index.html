@@ -1,0 +1,80 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple NFT Mint</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.6.2/dist/ethers.umd.min.js"></script>
+</head>
+
+<body style="font-family: Arial; padding: 20px;">
+
+  <h2>🚀 Techara NFT Mint</h2>
+
+  <button onclick="connectWallet()">Connect MetaMask</button>
+  <p id="wallet"></p>
+
+  <button onclick="mintNFT()">Mint NFT</button>
+
+  <script>
+    let provider;
+    let signer;
+    let contract;
+
+    const contractAddress = "0x1344fad088500a6e77d8b562242b133cdd3a5ae0";
+
+    const abi = [
+      {
+        "inputs": [
+          {"internalType": "address","name": "recipient","type": "address"},
+          {"internalType": "string","name": "tokenURI","type": "string"}
+        ],
+        "name": "mintNFT",
+        "outputs": [{"internalType": "uint256","name": "","type": "uint256"}],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }
+    ];
+
+    async function connectWallet() {
+      if (window.ethereum) {
+        provider = new ethers.BrowserProvider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        signer = await provider.getSigner();
+
+        const address = await signer.getAddress();
+        document.getElementById("wallet").innerText = "Connected: " + address;
+
+        contract = new ethers.Contract(contractAddress, abi, signer);
+      } else {
+        alert("Install MetaMask!");
+      }
+    }
+
+    async function mintNFT() {
+      if (!contract) {
+        alert("Connect wallet first!");
+        return;
+      }
+
+      try {
+        const tokenURI = "https://ipfs.io/ipfs/bafkreieqbjdcvufnv2btbszoedjiv7lte2m23qvq6qynlx7ctga7dklmceYOUR_METADATA_HASH";
+
+        const tx = await contract.mintNFT(
+          await signer.getAddress(),
+          tokenURI
+        );
+
+        alert("Transaction Sent!");
+
+        await tx.wait();
+
+        alert("✅ NFT Minted Successfully!");
+      } catch (error) {
+        console.log(error);
+        alert("❌ Error: " + error.message);
+      }
+    }
+  </script>
+
+</body>
+</html>
